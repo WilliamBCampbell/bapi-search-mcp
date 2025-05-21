@@ -1,31 +1,24 @@
-# BapiSearch MCP Server
+# BAPI Analyzer MCP Server
 
-Interacts with an reads the nodes of an SAP BAPI1077 files
-
-This is a TypeScript-based MCP server that implements a simple notes system. It demonstrates core MCP concepts by providing:
-
-- Resources representing text notes with URIs and metadata
-- Tools for creating new notes
-- Prompts for generating summaries of notes
+This is a TypeScript-based MCP server designed to analyze SAP BAPI (Business Application Programming Interface) JSON structure files. It provides a tool to search within these files for specific properties and values.
 
 ## Features
 
-### Resources
-- List and access notes via `note://` URIs
-- Each note has a title, content and metadata
-- Plain text mime type for simple content access
-
 ### Tools
-- `create_note` - Create new text notes
-  - Takes title and content as required parameters
-  - Stores note in server state
 
-### Prompts
-- `summarize_notes` - Generate a summary of all stored notes
-  - Includes all note contents as embedded resources
-  - Returns structured prompt for LLM summarization
+-   **`search_bapi_file`**: Searches a BAPI JSON file.
+    -   **Input Parameters:**
+        -   `filePath` (string, required): Absolute path to the BAPI JSON file to search.
+        -   `searchProperty` (string, required): The property name to search for within the JSON structure.
+        -   `searchValue` (string, optional): The specific value of the `searchProperty` to filter by. If omitted, all occurrences of `searchProperty` are reported.
+    -   **Functionality:**
+        The tool parses the specified JSON file, traverses its structure to find occurrences of the `searchProperty`. If `searchValue` is provided, it further filters these occurrences. It returns an analysis report detailing the findings, including paths to the matched properties/values.
+    -   **Error Handling:**
+        Handles cases such as file not found or invalid JSON format.
 
 ## Development
+
+This project is built with Node.js and TypeScript.
 
 Install dependencies:
 ```bash
@@ -44,27 +37,34 @@ npm run watch
 
 ## Installation
 
-To use with Claude Desktop, add the server config:
+To use this MCP server with a compatible client (e.g., an IDE extension that supports MCP), you need to configure the client to locate and run this server.
 
-On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+For example, in `cline_mcp_settings.json` (typically found in a path like `/home/USER/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` on Linux for VSCode), you would add an entry:
 
 ```json
 {
   "mcpServers": {
-    "BapiSearch": {
-      "command": "/path/to/BapiSearch/build/index.js"
+    "bapi-analyzer-server": {
+      "command": "node /full/path/to/bapi-analyzer-server/build/index.js"
     }
   }
 }
 ```
+Replace `/full/path/to/` with the actual absolute path to the `bapi-analyzer-server` directory on your system. The server name used here (`bapi-analyzer-server`) should match the `name` field in the server's manifest if it has one, or be a unique identifier you choose.
 
-### Debugging
+## Debugging
 
-Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
+Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which can be run if added as a script to `package.json`:
 
+Example `package.json` script:
+```json
+"scripts": {
+  "inspector": "mcp-inspector"
+}
+```
+
+Then run:
 ```bash
 npm run inspector
 ```
-
 The Inspector will provide a URL to access debugging tools in your browser.
